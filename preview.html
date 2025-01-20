@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN" class="mdui-theme-auto">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
+    <meta name="renderer" content="webkit"/>
+    <link rel="icon" type="image/png" href="https://q2.qlogo.cn/headimg_dl?dst_uin=2973517380&spec=5">
+    <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
+    <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <title>图片预览</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: var(--mdui-color-surface);
+      }
+      .preview-container {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        padding: 0;
+        margin: 0;
+      }
+      #preview-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .preview-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: none;
+      }
+      .preview-image.active {
+        display: block;
+      }
+      .nav-button {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 1000;
+        background: var(--mdui-color-surface-container-high);
+        border-radius: 50%;
+        padding: 12px;
+        cursor: pointer;
+        opacity: 0.8;
+        transition: opacity 0.3s;
+      }
+      .nav-button:hover {
+        opacity: 1;
+      }
+      .prev-button {
+        left: 16px;
+      }
+      .next-button {
+        right: 16px;
+      }
+      .page-indicator {
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--mdui-color-surface-container-high);
+        padding: 8px 16px;
+        border-radius: 16px;
+        font-size: 14px;
+        opacity: 0.8;
+      }
+      #loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #error {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+    </style>
+  </head>
+  <body>
+    <mdui-top-app-bar style="position: relative;">
+      <mdui-button-icon icon="arrow_back" onclick="window.close()"></mdui-button-icon>
+      <mdui-top-app-bar-title>图片预览</mdui-top-app-bar-title>
+      <div style="flex-grow: 1"></div>
+    </mdui-top-app-bar>
+
+    <div class="preview-container">
+      <div id="loading">
+        <mdui-linear-progress indeterminate></mdui-linear-progress>
+      </div>
+      <div id="error" style="display: none;"></div>
+      <div id="preview-content"></div>
+      
+      <mdui-button-icon class="nav-button prev-button" icon="chevron_left"></mdui-button-icon>
+      <mdui-button-icon class="nav-button next-button" icon="chevron_right"></mdui-button-icon>
+      <div class="page-indicator"></div>
+    </div>
+
+    <script>
+      const loading = document.getElementById('loading');
+      const error = document.getElementById('error');
+      const previewContent = document.getElementById('preview-content');
+      const prevButton = document.querySelector('.prev-button');
+      const nextButton = document.querySelector('.next-button');
+      const pageIndicator = document.querySelector('.page-indicator');
+      
+      let currentIndex = 0;
+      let images = [];
+      
+      // 从URL参数获取图片数据
+      const urlParams = new URLSearchParams(window.location.search);
+      const imagesParam = urlParams.get('images');
+      
+      if (imagesParam) {
+        try {
+          images = JSON.parse(decodeURIComponent(imagesParam));
+          loading.style.display = 'none';
+          
+          // 渲染图片
+          previewContent.innerHTML = images
+            .map((url, index) => `
+              <img class="preview-image ${index === 0 ? 'active' : ''}" 
+                   src="${url}" 
+                   loading="${index === 0 ? 'eager' : 'lazy'}"
+              >
+            `).join('');
+          
+          updatePageIndicator();
+          updateNavButtons();
+        } catch (err) {
+          loading.style.display = 'none';
+          error.style.display = 'block';
+          error.innerHTML = '<mdui-alert type="error">加载图片数据失败</mdui-alert>';
+        }
+      } else {
+        loading.style.display = 'none';
+        error.style.display = 'block';
+        error.innerHTML = '<mdui-alert type="error">未找到图片数据</mdui-alert>';
+      }
+      
+      function updatePageIndicator() {
+        if (images.length > 0) {
+          pageIndicator.textContent = `${currentIndex + 1} / ${images.length}`;
+        }
+      }
+      
+      function updateNavButtons() {
+        prevButton.style.display = currentIndex > 0 ? 'block' : 'none';
+        nextButton.style.display = currentIndex < images.length - 1 ? 'block' : 'none';
+      }
+      
+      function showImage(index) {
+        const allImages = document.querySelectorAll('.preview-image');
+        allImages.forEach(img => img.classList.remove('active'));
+        allImages[index].classList.add('active');
+        currentIndex = index;
+        updatePageIndicator();
+        updateNavButtons();
+      }
+      
+      prevButton.addEventListener('click', () => {
+        if (currentIndex > 0) {
+          showImage(currentIndex - 1);
+        }
+      });
+      
+      nextButton.addEventListener('click', () => {
+        if (currentIndex < images.length - 1) {
+          showImage(currentIndex + 1);
+        }
+      });
+      
+      // 键盘导航
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' && currentIndex > 0) {
+          showImage(currentIndex - 1);
+        } else if (e.key === 'ArrowRight' && currentIndex < images.length - 1) {
+          showImage(currentIndex + 1);
+        }
+      });
+    </script>
+  </body>
+</html> 
