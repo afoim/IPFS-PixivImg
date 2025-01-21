@@ -34,14 +34,10 @@ jobs:
       env:
         TZ: Asia/Shanghai
 
-    - name: Generate HTML
-      run: |
-        python build.py
-
     - name: Commit and push changes
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add *.json index.html
+        git add *.json
         git diff --quiet && git diff --staged --quiet || git commit -m 'chore: update gallery'
         git push 
