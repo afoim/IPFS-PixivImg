@@ -99,9 +99,15 @@
     <mdui-navigation-drawer close-on-overlay-click class="example-drawer">
       <mdui-button-icon icon="close"></mdui-button-icon>
       <div style="padding: 16px;">
-        <p>Powered By <a href="https://www.mdui.org/zh-cn/docs/2" target="_blank">MDUI 2</a></p>
-        <p>2024 &copy; <a href="https://github.com/AcoFork" target="_blank">AcoFork</a></p>
-      </div>
+          <p>Powered By <a href="https://www.mdui.org/zh-cn/docs/2" target="_blank">MDUI 2</a></p>
+          <p>&copy; 2024-<span id="current-year"></span> <a href="https://link.me/acofork" target="_blank">关于我</a></p>
+        </div>
+        
+        <script>
+          // 自动设置版权年份
+          const currentYear = new Date().getFullYear();
+          document.getElementById('current-year').textContent = currentYear;
+        </script>
     </mdui-navigation-drawer>
     
     <script>
