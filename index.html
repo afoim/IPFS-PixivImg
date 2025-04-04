@@ -70,9 +70,46 @@
         padding: 20px;
         color: var(--mdui-color-error);
       }
+      .announcement-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--mdui-color-surface-container);
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        max-width: 400px;
+        text-align: center;
+        z-index: 1000;
+      }
+      .announcement-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+      }
+      .announcement-close {
+        margin-top: 15px;
+        padding: 8px 20px;
+      }
     </style>
   </head>
   <body>
+    <div id="announcement" style="display: none;">
+      <div class="announcement-overlay"></div>
+      <div class="announcement-popup">
+        <h2>项目停更公告</h2>
+        <p>由于 Github Action 份额已用尽，<a href="https://github.com/afoim/IPFS-PixivImg" target="_blank" style="color: var(--mdui-color-primary);">本项目</a>将无限期停更。</p>
+        <p>停更时间：2025/4/4</p>
+        <p>感谢您的支持与理解！</p>
+        <mdui-button class="announcement-close" onclick="closeAnnouncement()">关闭</mdui-button>
+      </div>
+    </div>
+
     <mdui-top-app-bar style="position: relative;">
       <mdui-button-icon icon="menu" class="menu-button"></mdui-button-icon>
       <mdui-top-app-bar-title>Pixiv 排行榜</mdui-top-app-bar-title>
@@ -193,6 +230,16 @@
 
       // 初始加载
       loadData('daily');
+
+      // 公告弹窗相关代码
+      function closeAnnouncement() {
+        document.getElementById('announcement').style.display = 'none';
+      }
+      
+      // 显示公告
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('announcement').style.display = 'block';
+      });
     </script>
   </body>
 </html>
